@@ -128,7 +128,7 @@ These are small but useful included utilities.
 ## Development Workflow
 
 **Live Preview**
-When developing in-game you can use the `fxmanifest` at `ui_page` for live preview without build or watch. You can go to `fxmanifest.lua` and see the line. For live preview use `ui_page 'http://localhost:5173/'` and when already done you can use `ui_page 'web/build/index.html'`
+When developing in-game you can use the `fxmanifest` at `ui_page` for live preview without build or watch. You can go to `fxmanifest.lua` and see the line. For live preview use `ui_page 'http://localhost:5173/'` (Check the console. If the port is different, change the number.) and when already done you can use `ui_page 'web/build/index.html'`
 
 You no need to restart or ensure script when developing (except got error, hahaha). Use `svelte:show` for open the dialog.
 
