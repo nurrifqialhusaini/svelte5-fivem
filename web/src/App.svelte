@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Dashboard from "$lib/Dashboard.svelte";
-	import VisibilityProvider from "$lib/providers/VisibilityProviider.svelte";
+	import VisibilityProvider from "$lib/providers/VisibilityProvider.svelte";
 </script>
 
 <VisibilityProvider>
