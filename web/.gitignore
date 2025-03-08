@@ -17,7 +17,7 @@ build
 
 # Editor directories and files
 .vscode/*
-.bun.lock
+bun.lock
 !.vscode/extensions.json
 .idea
 .DS_Store
