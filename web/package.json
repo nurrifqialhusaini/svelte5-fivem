@@ -1,8 +1,22 @@
 {
 	"name": "svelte-fivem",
+	"version": "2.0.0-canary.1",
+	"devDependencies": {
+		"@fontsource-variable/archivo": "^5.3.0",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"@tailwindcss/vite": "^4.3.3",
+		"@tsconfig/svelte": "^5.0.8",
+		"@types/node": "^24.19.2",
+		"prettier": "^3.9.10",
+		"prettier-plugin-svelte": "^4.1.1",
+		"svelte": "^5.57.2",
+		"svelte-check": "^4.7.7",
+		"tailwindcss": "^4.3.3",
+		"tslib": "^2.8.1",
+		"typescript": "^6.0.3",
+		"vite": "^8.3.4"
+	},
 	"private": true,
-	"version": "1.0.0",
-	"type": "module",
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
@@ -10,18 +24,5 @@
 		"check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
 		"format": "prettier --write ."
 	},
-	"devDependencies": {
-		"@sveltejs/vite-plugin-svelte": "^4.0.0",
-		"@tsconfig/svelte": "^5.0.4",
-		"autoprefixer": "^10.4.20",
-		"postcss": "^8.5.3",
-		"svelte": "^5.1.3",
-		"svelte-check": "^4.0.5",
-		"tailwindcss": "3",
-		"tslib": "^2.8.0",
-		"typescript": "^5.6.3",
-		"vite": "^5.4.10",
-		"prettier": "^3.5.3",
-		"prettier-plugin-svelte": "^3.3.3"
-	}
+	"type": "module"
 }
