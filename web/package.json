@@ -1,6 +1,6 @@
 {
 	"name": "svelte-fivem",
-	"version": "2.0.0-canary.1",
+	"version": "2.0.0-canary.2",
 	"devDependencies": {
 		"@fontsource-variable/archivo": "^5.3.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
