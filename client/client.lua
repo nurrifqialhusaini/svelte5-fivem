@@ -3,7 +3,6 @@ local count = 0
 local lastMinute, lastStreet
 
 RegisterCommand('svelte:show', function()
-    -- data sent before the UI loaded is lost, clear it so the loop sends it again
     lastMinute, lastStreet = nil, nil
     SendNUIMessage({ action = 'setCount', data = count })
     SendNUIMessage({
@@ -11,10 +10,11 @@ RegisterCommand('svelte:show', function()
         data = true
     })
     SetNuiFocus(true, true)
-    -- player can still walk while the UI is open
     SetNuiFocusKeepInput(true)
-    isOpen = true
     print("Svelte showing")
+
+    if isOpen then return end
+    isOpen = true
 
     CreateThread(function()
         while isOpen do
@@ -31,7 +31,7 @@ RegisterCommand('svelte:show', function()
 end)
 
 RegisterNUICallback('setCount', function(data, cb)
-    count = tonumber(data.count) or count
+    count = math.tointeger(tonumber(data and data.value)) or count
     print(('Counter is %d'):format(count))
     cb({})
 end)
