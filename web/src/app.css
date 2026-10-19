@@ -1,3 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+	--font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+	--color-glass: oklch(0.2 0.025 258 / 0.78);
+	--color-ink: #eef2f7;
+	--color-ink-soft: #a9b2c3;
+	--color-line: oklch(1 0 0 / 0.1);
+	--color-waypoint: #b86cf0;
+	--color-waypoint-ink: #1a0b26;
+}
+
+@utility focus-ring {
+	&:focus-visible {
+		outline: 2px solid var(--color-waypoint);
+		outline-offset: 2px;
+	}
+}

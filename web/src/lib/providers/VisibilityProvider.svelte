@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, type Snippet } from "svelte";
 	import { visibilityStore as visibility } from "$lib/stores/VisibilityStore";
 	import { useNuiEvent } from "$lib/hooks/useNuiEvent";
 	import { fetchNui } from "$lib/utils/fetchNui";
+
+	let { children }: { children: Snippet } = $props();
 
 	onMount(() => {
 		const keyHandler = (e: KeyboardEvent) => {
@@ -22,5 +24,5 @@
 </script>
 
 {#if $visibility}
-	<slot />
+	{@render children()}
 {/if}

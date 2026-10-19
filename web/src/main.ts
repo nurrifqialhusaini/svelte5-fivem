@@ -1,4 +1,5 @@
 import { mount } from "svelte";
+import "@fontsource-variable/archivo/wdth.css";
 import "./app.css";
 import App from "./App.svelte";
 import { isEnvBrowser } from "$lib/utils/misc";

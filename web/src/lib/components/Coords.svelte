@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { Tween, prefersReducedMotion } from "svelte/motion";
+	import { cubicOut } from "svelte/easing";
 	import { fetchNui } from "$lib/utils/fetchNui";
-	import { visibilityStore as visibility } from "$lib/stores/VisibilityStore";
 
 	interface ReturnData {
 		x: number;
@@ -8,46 +9,119 @@
 		z: number;
 	}
 
-	let clientData: ReturnData | null = null;
+	// mock data for browser
+	const mock: ReturnData = { x: -1037, y: -2737, z: 14 };
+
+	let position: ReturnData | null = $state(null);
+	let loading = $state(false);
+	let error: string | null = $state(null);
+
+	const x = new Tween(0, { easing: cubicOut });
+	const y = new Tween(0, { easing: cubicOut });
+	const z = new Tween(0, { easing: cubicOut });
+	const rows = [
+		{ axis: "X", tween: x },
+		{ axis: "Y", tween: y },
+		{ axis: "Z", tween: z },
+	];
+
+	const format = (value: number) =>
+		Math.round(value).toString().replace("-", "−");
 
 	const handleClientData = () => {
-		fetchNui("getClientData")
+		loading = true;
+		error = null;
+		fetchNui<ReturnData>("getClientData", undefined, {
+			data: mock,
+			delay: 400,
+		})
 			.then((returnData) => {
-				clientData = returnData;
+				position = returnData;
+				const duration = prefersReducedMotion.current ? 0 : 700;
+				x.set(returnData.x, { duration });
+				y.set(returnData.y, { duration });
+				z.set(returnData.z, { duration });
 			})
 			.catch(() => {
-				clientData = { x: 100, y: 100, z: 100 };
+				error =
+					"The client script did not answer. Check that getClientData is registered in client.lua.";
+			})
+			.finally(() => {
+				loading = false;
 			});
 	};
 
-	const closeDialog = () => {
-		visibility.toggle(false);
-		fetchNui("hideUI");
-	};
 	const resetCoords = () => {
-		clientData = null;
+		position = null;
+		for (const { tween } of rows) tween.set(0, { duration: 0 });
 	};
 </script>
 
-<div class="flex flex-col min-w-full p-4 mt-4">
-	<h2 class="font-semibold mb-4 text-center">
-		Let test callback and get player coords
-	</h2>
-	<div class="bg-slate-500 p-1">
-		Player coords: {clientData ? JSON.stringify(clientData) : ""}
-	</div>
-	<div class="flex flex-row gap-2 min-w-full mt-2">
-		<button on:click={handleClientData} class="bg-green-800 p-1 w-full">
-			Get client coords
-		</button>
-		<button on:click={resetCoords} class="bg-slate-800 p-1"
-			>Reset Coords</button
+<section class="border-t border-line px-6 py-5">
+	<div class="flex items-start justify-between gap-4">
+		<div>
+			<h2 class="text-sm font-semibold">Player position</h2>
+			<p class="text-xs text-ink-soft">
+				Fetched from client.lua with fetchNui
+			</p>
+		</div>
+		<svg
+			viewBox="0 0 24 24"
+			aria-hidden="true"
+			class={[
+				"size-6 transition-colors duration-300",
+				position ? "text-waypoint" : "text-ink-soft/40",
+			]}
 		>
+			<path
+				fill="currentColor"
+				d="M12 2a7.5 7.5 0 0 0-7.5 7.5C4.5 15 12 22 12 22s7.5-7 7.5-12.5A7.5 7.5 0 0 0 12 2Zm0 10.25a2.75 2.75 0 1 1 0-5.5 2.75 2.75 0 0 1 0 5.5Z"
+			/>
+		</svg>
 	</div>
-	<div class="flex flex-col gap-2 min-w-full mt-2">
-		<button on:click={closeDialog} class="bg-red-800 p-1 w-full">
-			Close dialog
+
+	{#if position}
+		<dl class="mt-3 grid grid-cols-[auto_1fr] items-baseline gap-x-4">
+			{#each rows as { axis, tween } (axis)}
+				<dt class="text-xs font-medium text-ink-soft">{axis}</dt>
+				<dd
+					class="text-right text-[2.75rem] leading-[1.1] font-semibold tabular-nums font-stretch-75%"
+				>
+					{format(tween.current)}
+				</dd>
+			{/each}
+		</dl>
+	{:else if error}
+		<p
+			role="alert"
+			class="mt-4 rounded-xl border border-red-300/30 bg-red-500/15 px-3 py-2.5 text-xs leading-relaxed text-red-100"
+		>
+			{error}
+		</p>
+	{:else}
+		<p
+			class="mt-4 rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs text-ink-soft"
+		>
+			No position yet. Press Get position to ask the game.
+		</p>
+	{/if}
+
+	<div class="mt-4 flex gap-2">
+		<button
+			type="button"
+			onclick={handleClientData}
+			disabled={loading}
+			class="flex-1 rounded-xl bg-waypoint px-4 py-2.5 text-sm font-semibold text-waypoint-ink focus-ring hover:brightness-110 active:translate-y-px disabled:opacity-60"
+		>
+			{loading ? "Getting position…" : "Get position"}
 		</button>
-		<span>Or press the escape key!</span>
+		<button
+			type="button"
+			onclick={resetCoords}
+			disabled={!position}
+			class="rounded-xl border border-line px-4 py-2.5 text-sm font-medium focus-ring hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-transparent"
+		>
+			Clear
+		</button>
 	</div>
-</div>
+</section>
