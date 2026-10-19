@@ -1,10 +1,10 @@
-fx_version 'bodacious'
+fx_version 'cerulean'
 game 'gta5'
 use_fxv2_oal 'yes'
 
-description 'Svelte5 Boilerplate with TailwindCSS 3'
+description 'Svelte5 Boilerplate with TailwindCSS 4'
 author 'alhuscode.my.id'
-version '1.0.0'
+version '2.0.0-canary.1'
 lua54 'yes'
 
 -- ui_page 'http://localhost:5173/' -- Uncomment this if you are using Vite (live preview when developing)
