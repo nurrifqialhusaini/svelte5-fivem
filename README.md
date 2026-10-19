@@ -20,8 +20,11 @@ FiveM is moving its embedded browser (CEF) from v103 to v144. Tailwind CSS 4 and
 
 - **Svelte 5.57, Tailwind CSS 4, Vite 8, TypeScript 6.** No more `tailwind.config.js` or `postcss.config.js`, Tailwind is configured in CSS.
 - **`nuiState`**, read the last data sent for an action from any component, even if it was sent while the UI was hidden. See [Sending data in realtime](#sending-data-in-realtime).
+- **`nuiSync`**, a value shared both ways between the UI and Lua. Works with `bind:value`, changes are sent to Lua automatically.
+- **`nuiAction`**, calls a NUI callback and keeps `data`, `loading` and `error` for you.
+- **Typed actions**, list your actions once in `src/lib/nui.ts` and get autocomplete and type checks in every helper.
 - **`onNuiEvent`**, the same as `useNuiEvent` but usable outside components, in stores and `.svelte.ts` files.
-- **Safer message listener**, messages that do not come from `SendNUIMessage` (devtools, browser extensions) are ignored instead of throwing.
+- **Safer message listener**, messages that do not come from `SendNUIMessage` (devtools, browser extensions) are ignored, and a handler that throws no longer stops the other handlers.
 - **Manifest uses `cerulean`.** CEF 144 can block secure-context features for `adamant`, `bodacious` and `__resource.lua`.
 - **New example UI** using `@starting-style` (Tailwind's `starting:` variant), variable fonts and `Tween` from `svelte/motion`.
 - **Svelte 5 syntax everywhere.** `onclick` instead of `on:click`, `{@render children()}` instead of `<slot />`, `$state` instead of plain `let`.
@@ -65,18 +68,41 @@ web/
     App.svelte                          Root component, wrap your UI in VisibilityProvider
     app.css                             Tailwind import and theme tokens (@theme)
     lib/
+      nui.ts                            Your actions and callbacks, for types and autocomplete
       Dashboard.svelte                  Example UI, replace it with your own
       components/                       Example components (Counter, LiveData, Coords, Footer)
       hooks/useNuiEvent.ts              useNuiEvent, onNuiEvent
       providers/VisibilityProvider.svelte
       stores/VisibilityStore.ts         visibilityStore
       stores/nuiState.ts                nuiState
+      stores/nuiSync.ts                 nuiSync
+      stores/nuiAction.svelte.ts        nuiAction
       utils/fetchNui.ts                 fetchNui
       utils/debugData.ts                debugData
       utils/misc.ts                     isEnvBrowser
 ```
 
 ## Utilities
+
+### Typed actions (new)
+
+List the messages Lua sends and the callbacks Lua registers in `src/lib/nui.ts`:
+
+```ts
+export interface NuiMessages {
+	// SendNUIMessage({ action = 'setMoney', data = 500 })
+	setMoney: number;
+}
+
+export interface NuiCallbacks {
+	// RegisterNUICallback('buyItem', function(data, cb) cb({ ok = true }) end)
+	buyItem: { data: { item: string }; response: { ok: boolean } };
+}
+```
+
+`nuiState`, `nuiSync`, `useNuiEvent`, `onNuiEvent`, `fetchNui` and `nuiAction` then autocomplete these names and check the data, so a typo or a wrong payload shows up in `bun run check` instead of in game.
+
+Actions you do not list keep working without types, and so does passing the type yourself (`fetchNui<Coords>("getClientData")`), so v1 code needs no change.
 
 ### VisibilityProvider and visibilityStore
 
@@ -167,6 +193,36 @@ SendNUIMessage({ action = 'setMoney', data = 500 })
 
 The second argument is used until the first message for that action arrives. The Lua side does not change, any `SendNUIMessage` can be read this way.
 
+### nuiSync (new)
+
+A value shared both ways: it reads like `nuiState`, and when you change it the new value goes to the NUI callback with the same name as `{ value }`. It keeps its value when the UI is closed and opened again.
+
+```lua
+local volume = 50
+
+RegisterCommand('openSettings', function()
+    SendNUIMessage({ action = 'setVolume', data = volume })
+    -- show the UI
+end)
+
+RegisterNUICallback('setVolume', function(data, cb)
+    volume = tonumber(data and data.value) or volume
+    cb({})
+end)
+```
+
+```svelte
+<script lang="ts">
+	import { nuiSync } from "$lib/stores/nuiSync";
+
+	const volume = nuiSync("setVolume", 50);
+</script>
+
+<input type="range" bind:value={volume.current} />
+```
+
+Changes made quickly one after another (dragging a slider, clicking fast) are sent once, 100 ms after the last change. Change the wait with `nuiSync("setVolume", 50, { delay: 300 })`.
+
 ### fetchNui
 
 A small wrapper around `fetch` for calling `RegisterNUICallback` handlers in Lua. Lua must always answer with `cb(...)`, at least `cb({})`.
@@ -200,9 +256,38 @@ end)
 
 The third argument is mock data returned in the browser. In the browser `fetchNui` never resolves without it, so pass a mock for anything you want to test outside the game.
 
+### nuiAction (new)
+
+`fetchNui` with the usual state already handled. It never throws: if Lua does not answer, `error` is set instead.
+
+```svelte
+<script lang="ts">
+	import { nuiAction } from "$lib/stores/nuiAction.svelte";
+
+	const coords = nuiAction("getClientData", {
+		mock: { x: -1037, y: -2737, z: 14 }, // used in the browser
+	});
+</script>
+
+<button onclick={() => coords.run()} disabled={coords.loading}>
+	{coords.loading ? "Getting position…" : "Get position"}
+</button>
+
+{#if coords.error}
+	<p>{coords.error}</p>
+{:else if coords.data}
+	<p>{coords.data.x}, {coords.data.y}, {coords.data.z}</p>
+{/if}
+```
+
+- `run(payload?)` sends the payload to Lua and returns the answer (or `undefined` when it failed).
+- `reset()` clears `data` and `error`.
+- If you call `run()` again before the first answer arrives, only the newest answer is kept.
+- In the browser without a `mock`, `error` tells you the mock is missing instead of waiting forever.
+
 ### debugData
 
-Fakes a `SendNUIMessage` while developing in the browser. It triggers `useNuiEvent`, `onNuiEvent` and `nuiState` as if Lua sent it, and does nothing in game.
+Fakes a `SendNUIMessage` while developing in the browser. It triggers `useNuiEvent`, `onNuiEvent`, `nuiState` and `nuiSync` as if Lua sent it, and does nothing in game.
 
 ```svelte
 <script lang="ts">
@@ -283,8 +368,9 @@ The Lua side stays exactly the same.
 | Show a value that Lua keeps up to date (money, job, time, HUD data) | `nuiState` |
 | React to something that happens once (a toast, a sound, opening a page) | `useNuiEvent` |
 | Handle messages in a store or `.svelte.ts` file | `onNuiEvent` |
-| Ask Lua for data and wait for the answer | `fetchNui` |
-| Send a value to Lua every time it changes (settings, counters, sliders) | `fetchNui`, see `Counter.svelte` |
+| Ask Lua for data and show the answer (with loading and error) | `nuiAction`, see `Coords.svelte` |
+| Keep a value in sync both ways (settings, counters, sliders) | `nuiSync`, see `Counter.svelte` |
+| Call Lua from your own code and handle the promise yourself | `fetchNui` |
 
 `nuiState` only keeps the latest message per action, so use `useNuiEvent` for events where every message matters, like a kill feed.
 
@@ -358,7 +444,7 @@ The Lua side stays exactly the same.
    - The CSS `zoom` property follows the standard now, layouts that relied on the old behavior may shift.
    - `new URL()` throws on forbidden characters such as `<`, `>` and `|`.
 
-Your existing `useNuiEvent`, `fetchNui` and `debugData` calls do not need any change. Move to `nuiState` whenever it is convenient.
+Your existing `useNuiEvent`, `fetchNui` and `debugData` calls do not need any change. Move to `nuiState`, `nuiSync` and `nuiAction` whenever it is convenient.
 
 ## Development workflow
 
