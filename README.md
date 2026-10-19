@@ -4,6 +4,16 @@ This repository improvement from [Overextended](https://github.com/overextended/
 
 This version of the boilerplate is meant for the CfxLua runtime.
 
+> [!TIP]
+> **Looking for Tailwind CSS 4 and the latest Svelte 5?** Version 2 is available as a pre-release on the [`cef144`](https://github.com/nurrifqialhusaini/svelte5-fivem/tree/cef144) branch, with Svelte 5.57, Tailwind CSS 4, Vite 8, a new example UI and new helpers (`nuiState`, `nuiSync`, `nuiAction`). Download it from the [releases page](https://github.com/nurrifqialhusaini/svelte5-fivem/releases).
+>
+> It needs the FiveM **Canary** channel (CEF 144). On the Release channel (CEF 103) stay on this version (v1), v2 will become the default once CEF 144 reaches Release.
+
+| Version | Branch | FiveM channel | Tailwind CSS |
+| --- | --- | --- | --- |
+| v1 (this one) | `main` | Release (CEF 103) | 3 |
+| v2 (pre-release) | `cef144` | Canary (CEF 144) | 4 |
+
 ## Requirements
 * [bun](https://bun.sh/) (Highly recommended over yarn, npm or pnpm)
 
