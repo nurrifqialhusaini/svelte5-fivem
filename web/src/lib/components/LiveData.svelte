@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { nuiState } from "$lib/stores/nuiState";
 
-	const clock = nuiState<{ hour: number; minute: number } | null>(
-		"setClock",
-		null,
-	);
+	const clock = nuiState("setClock", null);
 	const street = nuiState("setStreet", "");
 
-	const pad = (value: number) => value.toString().padStart(2, "0");
+	const pad = (value: number) => String(value ?? 0).padStart(2, "0");
 </script>
 
 <section class="px-6 py-4 divider-t">

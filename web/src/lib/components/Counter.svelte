@@ -1,23 +1,21 @@
 <script lang="ts">
-	import { nuiState } from "$lib/stores/nuiState";
-	import { fetchNui } from "$lib/utils/fetchNui";
+	import { nuiSync } from "$lib/stores/nuiSync";
 
-	// last value from client.lua, sent again every time the UI opens
-	const saved = nuiState("setCount", 0);
-	let count = $derived(saved.current);
+	// read from SendNUIMessage, changes go back to RegisterNUICallback('setCount')
+	const count = nuiSync("setCount", 0);
 
-	const update = (value: number) => {
-		count = value;
-		fetchNui("setCount", { count: value }, { data: {} });
+	const increment = () => {
+		count.current += 1;
 	};
-	const increment = () => update(count + 1);
-	const decrement = () => update(count - 1);
+	const decrement = () => {
+		count.current -= 1;
+	};
 </script>
 
 <section class="flex items-center justify-between gap-4 px-6 py-4 divider-t">
 	<div>
 		<h2 class="text-sm font-semibold">Counter</h2>
-		<p class="text-xs text-ink-soft">Saved in client.lua with fetchNui</p>
+		<p class="text-xs text-ink-soft">Saved in client.lua with nuiSync</p>
 	</div>
 	<div
 		class="flex items-center rounded-xl bg-black/30 p-1 inset-ring inset-ring-white/10"
@@ -36,7 +34,7 @@
 			aria-live="polite"
 			class="w-12 text-center text-xl font-semibold tabular-nums font-stretch-75%"
 		>
-			{count}
+			{count.current}
 		</output>
 		<button
 			type="button"
