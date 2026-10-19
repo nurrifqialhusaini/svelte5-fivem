@@ -8,19 +8,19 @@
 	};
 </script>
 
-<footer class="border-t border-line px-6 pt-4 pb-5">
+<footer class="px-6 pt-4 pb-5 divider-t">
 	<div class="flex items-center justify-between gap-3">
 		<button
 			type="button"
 			onclick={closeDialog}
-			class="rounded-xl border border-line px-4 py-2 text-sm font-medium focus-ring hover:bg-white/10"
+			class="rounded-xl bg-black/25 px-4 py-2 text-sm font-medium inset-ring inset-ring-white/15 focus-ring hover:bg-white/10"
 		>
 			Close
 		</button>
 		<span class="text-xs text-ink-soft">
 			or press
 			<kbd
-				class="ml-1 rounded-md border border-line bg-white/5 px-1.5 py-0.5 font-sans text-[0.6875rem] text-ink"
+				class="ml-1 rounded-md bg-black/30 inset-ring inset-ring-white/15 px-1.5 py-0.5 font-sans text-[0.6875rem] text-ink"
 				>Esc</kbd
 			>
 		</span>

@@ -57,7 +57,7 @@
 	};
 </script>
 
-<section class="border-t border-line px-6 py-5">
+<section class="@container px-6 py-5 divider-t">
 	<div class="flex items-start justify-between gap-4">
 		<div>
 			<h2 class="text-sm font-semibold">Player position</h2>
@@ -70,7 +70,9 @@
 			aria-hidden="true"
 			class={[
 				"size-6 transition-colors duration-300",
-				position ? "text-waypoint" : "text-ink-soft/40",
+				position
+					? "text-waypoint drop-shadow-md drop-shadow-waypoint/60"
+					: "text-ink-soft/50",
 			]}
 		>
 			<path
@@ -85,7 +87,7 @@
 			{#each rows as { axis, tween } (axis)}
 				<dt class="text-xs font-medium text-ink-soft">{axis}</dt>
 				<dd
-					class="text-right text-[2.75rem] leading-[1.1] font-semibold tabular-nums font-stretch-75%"
+					class="text-right text-4xl leading-[1.1] @xs:text-[2.75rem] font-semibold tabular-nums font-stretch-75%"
 				>
 					{format(tween.current)}
 				</dd>
@@ -94,24 +96,24 @@
 	{:else if error}
 		<p
 			role="alert"
-			class="mt-4 rounded-xl border border-red-300/30 bg-red-500/15 px-3 py-2.5 text-xs leading-relaxed text-red-100"
+			class="mt-4 rounded-xl bg-red-500/20 inset-ring inset-ring-red-300/30 px-3 py-2.5 text-xs leading-relaxed text-red-100"
 		>
 			{error}
 		</p>
 	{:else}
 		<p
-			class="mt-4 rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs text-ink-soft"
+			class="mt-4 rounded-xl border border-dashed border-white/20 bg-black/15 px-3 py-6 text-center text-xs text-ink-soft"
 		>
 			No position yet. Press Get position to ask the game.
 		</p>
 	{/if}
 
-	<div class="mt-4 flex gap-2">
+	<div class="mt-4 flex flex-col gap-2 @xs:flex-row">
 		<button
 			type="button"
 			onclick={handleClientData}
 			disabled={loading}
-			class="flex-1 rounded-xl bg-waypoint px-4 py-2.5 text-sm font-semibold text-waypoint-ink focus-ring hover:brightness-110 active:translate-y-px disabled:opacity-60"
+			class="flex-1 rounded-xl bg-waypoint px-4 py-2.5 text-sm font-semibold text-waypoint-ink shadow-lg shadow-waypoint/25 text-shadow-none focus-ring not-disabled:hover:brightness-110 active:translate-y-px disabled:opacity-60"
 		>
 			{loading ? "Getting position…" : "Get position"}
 		</button>
@@ -119,7 +121,7 @@
 			type="button"
 			onclick={resetCoords}
 			disabled={!position}
-			class="rounded-xl border border-line px-4 py-2.5 text-sm font-medium focus-ring hover:bg-white/10 disabled:opacity-40 disabled:hover:bg-transparent"
+			class="rounded-xl bg-black/25 px-4 py-2.5 text-sm font-medium inset-ring inset-ring-white/15 focus-ring not-disabled:hover:bg-white/10 disabled:opacity-40"
 		>
 			Clear
 		</button>

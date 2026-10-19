@@ -10,7 +10,7 @@
 	const pad = (value: number) => value.toString().padStart(2, "0");
 </script>
 
-<section class="border-t border-line px-6 py-4">
+<section class="px-6 py-4 divider-t">
 	<h2 class="text-sm font-semibold">Live from the game</h2>
 	<p class="text-xs text-ink-soft">
 		Sent with SendNUIMessage, kept while this panel is closed

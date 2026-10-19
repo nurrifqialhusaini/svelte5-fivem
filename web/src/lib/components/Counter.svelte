@@ -1,21 +1,27 @@
 <script lang="ts">
-	let count: number = $state(0);
-	const increment = () => {
-		count += 1;
+	import { nuiState } from "$lib/stores/nuiState";
+	import { fetchNui } from "$lib/utils/fetchNui";
+
+	// last value from client.lua, sent again every time the UI opens
+	const saved = nuiState("setCount", 0);
+	let count = $derived(saved.current);
+
+	const update = (value: number) => {
+		count = value;
+		fetchNui("setCount", { count: value }, { data: {} });
 	};
-	const decrement = () => {
-		count -= 1;
-	};
+	const increment = () => update(count + 1);
+	const decrement = () => update(count - 1);
 </script>
 
-<section
-	class="flex items-center justify-between gap-4 border-t border-line px-6 py-4"
->
+<section class="flex items-center justify-between gap-4 px-6 py-4 divider-t">
 	<div>
 		<h2 class="text-sm font-semibold">Counter</h2>
-		<p class="text-xs text-ink-soft">Local state with $state</p>
+		<p class="text-xs text-ink-soft">Saved in client.lua with fetchNui</p>
 	</div>
-	<div class="flex items-center rounded-xl border border-line bg-black/20 p-1">
+	<div
+		class="flex items-center rounded-xl bg-black/30 p-1 inset-ring inset-ring-white/10"
+	>
 		<button
 			type="button"
 			onclick={decrement}
