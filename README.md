@@ -14,7 +14,7 @@ FiveM is moving its embedded browser (CEF) from v103 to v144. Tailwind CSS 4 and
 | v2.x | Canary (Release soon) | 144 | 5 | 4 | 8 |
 
 > [!WARNING]
-> On CEF 103 the v2 UI loads, but colors, gradients and some layouts break because Tailwind CSS 4 relies on modern CSS (`@property`, `color-mix()`, `oklch()`). Stay on v1.x until CEF 144 reaches the channel you use.
+> On CEF 103 the v2 UI loads, but colors, gradients and some layouts break because Tailwind CSS 4 relies on modern CSS (`@property`, `color-mix()`, `oklch()`). The example panel also uses `backdrop-blur`, which turns the area behind it black on CEF 103. Stay on v1.x until CEF 144 reaches the channel you use.
 
 ## What's new in v2
 
@@ -23,7 +23,7 @@ FiveM is moving its embedded browser (CEF) from v103 to v144. Tailwind CSS 4 and
 - **`onNuiEvent`**, the same as `useNuiEvent` but usable outside components, in stores and `.svelte.ts` files.
 - **Safer message listener**, messages that do not come from `SendNUIMessage` (devtools, browser extensions) are ignored instead of throwing.
 - **Manifest uses `cerulean`.** CEF 144 can block secure-context features for `adamant`, `bodacious` and `__resource.lua`.
-- **New example UI** using `backdrop-blur`, `@starting-style` (Tailwind's `starting:` variant), variable fonts and `Tween` from `svelte/motion`.
+- **New example UI** using `@starting-style` (Tailwind's `starting:` variant), variable fonts and `Tween` from `svelte/motion`.
 - **Svelte 5 syntax everywhere.** `onclick` instead of `on:click`, `{@render children()}` instead of `<slot />`, `$state` instead of plain `let`.
 
 Everything from v1 still works: `useNuiEvent`, `fetchNui`, `debugData`, `visibilityStore`, the `setVisible` action and the `hideUI` callback have the same names and behave the same way.
@@ -284,6 +284,7 @@ The Lua side stays exactly the same.
 | React to something that happens once (a toast, a sound, opening a page) | `useNuiEvent` |
 | Handle messages in a store or `.svelte.ts` file | `onNuiEvent` |
 | Ask Lua for data and wait for the answer | `fetchNui` |
+| Send a value to Lua every time it changes (settings, counters, sliders) | `fetchNui`, see `Counter.svelte` |
 
 `nuiState` only keeps the latest message per action, so use `useNuiEvent` for events where every message matters, like a kill feed.
 
@@ -309,7 +310,15 @@ The Lua side stays exactly the same.
   end)
   ```
 
-- **Messages sent before the page loads are lost.** Right after the resource starts the NUI page may not be loaded yet, and there is no JavaScript running to receive anything. Send initial data a little later, or when the UI opens for the first time.
+- **Messages sent before the page loads are lost.** Right after the resource starts the NUI page may not be loaded yet, and there is no JavaScript running to receive anything. A value that rarely changes (like a street name) then only shows up once it changes again. Clear the last sent value when the UI opens so it goes out again, like `lastMinute, lastStreet = nil, nil` in the `svelte:show` command of `client/client.lua`.
+- **Let the player move while the UI is open.** `SetNuiFocus(true, true)` blocks all game input, so values like the street name cannot change while the UI is open. Call `SetNuiFocusKeepInput(true)` after it and disable the controls that conflict with the cursor (camera, attack, pause menu) every frame, see the `svelte:show` command in `client/client.lua`. Reset it with `SetNuiFocusKeepInput(false)` when closing. Keep in mind that typing in an `<input>` also moves the player in this mode.
+- **`backdrop-blur` in NUI.** Results differ between the browser and in game:
+
+  | | Browser | CEF 103 | CEF 144 |
+  | --- | --- | --- | --- |
+  | `backdrop-blur-*` | Blurred | Turns black | Transparent, not blurred |
+
+  Make sure your panel is still readable without the blur.
 - **Empty Lua tables are sent as arrays.** `{}` arrives as `[]` in JavaScript, so check for both if a table can be empty.
 
 ## Migrating from v1
