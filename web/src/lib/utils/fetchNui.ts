@@ -1,5 +1,16 @@
 import { isEnvBrowser } from "./misc";
+import type { NuiCallbacks, Unlisted } from "$lib/nui";
 
+export function fetchNui<K extends keyof NuiCallbacks>(
+	eventName: K,
+	data?: NuiCallbacks[K]["data"],
+	mock?: { data: NuiCallbacks[K]["response"]; delay?: number },
+): Promise<NuiCallbacks[K]["response"]>;
+export function fetchNui<T = any, N extends string = string>(
+	eventName: Unlisted<N, NuiCallbacks>,
+	data?: any,
+	mock?: { data: T; delay?: number },
+): Promise<T>;
 export async function fetchNui<T = any>(
 	eventName: string,
 	data?: any,
